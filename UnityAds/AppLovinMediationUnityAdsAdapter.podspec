@@ -18,15 +18,13 @@ The AppLovin MAX SDK is available under a commercial license (https://www.applov
 LICENSE
 }
 
-s.source = 
-{ 
-  :http => "https://artifacts.applovin.com/ios/com/applovin/mediation/unityads-adapter/#{s.name}-#{s.version}.zip",
-  :type => 'zip'
-}
+s.source  = { :path => '.' }
+s.source_files  = '**/*.{h,m}'
+s.static_framework = true
 
 s.vendored_frameworks = "#{s.name}-#{s.version}/#{s.name}.xcframework"
 
-s.dependency 'UnityAds', '= {ADAPTER_SDK_VERSION}'
+s.dependency 'UnityAds', '= 4.18.0'
 s.dependency 'AppLovinSDK', '>= 13.0.0'
 s.swift_version = '5.0'
 
