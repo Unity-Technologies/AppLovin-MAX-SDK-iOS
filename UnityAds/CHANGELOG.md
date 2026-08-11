@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.19.0.2
+* Add support for adaptive banner ads (anchored and inline).
+
 ## 4.19.0.1
 * Update to use new UnityAds initialization, load/show, banner, privacy, and signal APIs.
 
