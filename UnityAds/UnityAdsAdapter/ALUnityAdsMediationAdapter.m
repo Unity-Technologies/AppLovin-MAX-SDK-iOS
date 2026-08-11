@@ -11,6 +11,11 @@
 
 #define ADAPTER_VERSION @"4.19.0.2"
 
+// Bounds used to derive an inline adaptive banner height when the publisher does not specify a maximum height
+static CGFloat const kALUnityAdsInlineAdaptiveScreenHeightRatio = 0.15f;
+static CGFloat const kALUnityAdsInlineAdaptiveMinHeight = 50.0f;
+static CGFloat const kALUnityAdsInlineAdaptiveMaxHeight = 90.0f;
+
 @interface ALUnityAdsInitializationDelegate : NSObject
 @property (nonatomic, weak) ALUnityAdsMediationAdapter *parentAdapter;
 @property (nonatomic, copy, nullable) void(^completionHandler)(MAAdapterInitializationStatus, NSString *_Nullable);
@@ -300,7 +305,12 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
         {
             [self log: @"%@ ad placement \"%@\" loaded", adFormat.label, placementIdentifier];
             self.bannerAd = ad;
-            [delegate didLoadAdForAdView: ad.view];
+
+            NSMutableDictionary *extraInfo = [NSMutableDictionary dictionaryWithCapacity: 2];
+            extraInfo[@"ad_width"] = @(bannerSize.width);
+            extraInfo[@"ad_height"] = @(bannerSize.height);
+
+            [delegate didLoadAdForAdView: ad.view withExtraInfo: extraInfo];
         }
     }];
 }
@@ -367,13 +377,21 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
             return CGSizeMake(adaptiveAdWidth, inlineMaximumHeight);
         }
         
-        // If not specified, inline maximum height will be the screen height according to current device orientation
-        return CGSizeMake(adaptiveAdWidth, CGRectGetHeight(UIScreen.mainScreen.bounds));
+        // If not specified, derive a banner-appropriate height from the screen
+        return CGSizeMake(adaptiveAdWidth, [self inlineAdaptiveFallbackHeight]);
     }
     
     // Return anchored size by default
     CGFloat anchoredHeight = [MAAdFormat.banner adaptiveSizeForWidth: adaptiveAdWidth].height;
     return CGSizeMake(adaptiveAdWidth, anchoredHeight);
+}
+
+// NOTE: Unity Ads banner sizes are fixed - the requested size is the size that gets rendered, with no notion of a maximum height. When the publisher does not specify an inline maximum height we therefore derive a banner-appropriate height from the screen instead of requesting the full screen height.
+- (CGFloat)inlineAdaptiveFallbackHeight
+{
+    CGFloat screenHeight = CGRectGetHeight(UIScreen.mainScreen.bounds);
+    CGFloat adaptiveHeight = round(screenHeight * kALUnityAdsInlineAdaptiveScreenHeightRatio);
+    return MIN(kALUnityAdsInlineAdaptiveMaxHeight, MAX(kALUnityAdsInlineAdaptiveMinHeight, adaptiveHeight));
 }
 
 - (CGSize)bannerSizeFromAdFormat:(MAAdFormat *)adFormat
