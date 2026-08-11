@@ -300,7 +300,12 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
         {
             [self log: @"%@ ad placement \"%@\" loaded", adFormat.label, placementIdentifier];
             self.bannerAd = ad;
-            [delegate didLoadAdForAdView: ad.view];
+            
+            NSMutableDictionary *extraInfo = [NSMutableDictionary dictionaryWithCapacity: 2];
+            extraInfo[@"ad_width"] = @(bannerSize.width);
+            extraInfo[@"ad_height"] = @(bannerSize.height);
+            
+            [delegate didLoadAdForAdView: ad.view withExtraInfo: extraInfo];
         }
     }];
 }
@@ -359,6 +364,7 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
 {
     CGFloat adaptiveAdWidth = [self adaptiveAdViewWidthFromParameters: parameters];
     
+    // NOTE: Unity Ads banner sizes are fixed - the requested size is the size that gets rendered, with no notion of a maximum height. An unspecified inline maximum height therefore falls back to the anchored size below instead of the screen height, which would ask Unity Ads for a screen-height banner.
     if ( [self isInlineAdaptiveAdViewForParameters: parameters] )
     {
         CGFloat inlineMaximumHeight = [self inlineAdaptiveAdViewMaximumHeightFromParameters: parameters];
@@ -366,9 +372,6 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
         {
             return CGSizeMake(adaptiveAdWidth, inlineMaximumHeight);
         }
-        
-        // If not specified, inline maximum height will be the screen height according to current device orientation
-        return CGSizeMake(adaptiveAdWidth, CGRectGetHeight(UIScreen.mainScreen.bounds));
     }
     
     // Return anchored size by default
