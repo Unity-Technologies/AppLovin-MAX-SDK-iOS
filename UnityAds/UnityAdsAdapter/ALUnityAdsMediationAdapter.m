@@ -136,8 +136,8 @@ static MAAdapterInitializationStatus ALUnityAdsInitializationStatus = NSIntegerM
         // NOTE: Server parameters are not reliably populated with placement-level settings during signal collection, so the adaptive banner flag is read from local extra parameters here
         BOOL isAdaptiveAdViewEnabled = [parameters.localExtraParameters al_boolForKey: @"adaptive_banner"];
         builder = [builder withBannerSize: [self bannerSizeFromAdFormat: parameters.adFormat
-                                                 isAdaptiveAdViewEnabled: isAdaptiveAdViewEnabled
-                                                              parameters: parameters]];
+                                                isAdaptiveAdViewEnabled: isAdaptiveAdViewEnabled
+                                                             parameters: parameters]];
     }
     
     [UnityAds getToken: [builder build] completion:^(NSString *signal) {
